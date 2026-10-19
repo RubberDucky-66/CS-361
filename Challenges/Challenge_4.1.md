@@ -19,7 +19,7 @@ flowchart TB
     E@{ shape: cyl}
 ```
 
-![Mermaid Diagram](mermaid_1)
+![Mermaid Diagram](mermaid_1.png)
 
 mermaid code for part 2:
 
@@ -43,4 +43,4 @@ flowchart TB
     L_B_C_0@{ curve: linear }
 ```
 
-![Mermaid Diagram](mermaid_2)
+![Mermaid Diagram](mermaid_2.png)
