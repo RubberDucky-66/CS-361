@@ -26,3 +26,33 @@ The following are beyond the scope of the system and are not required for the so
 # Section 4: Use Case Diagram 
 
 ![Use Case Diagram](use_case_1.png)
+
+# Section 5: UX FLow
+
+![UX Flow Diagram](ux_flow.drawio.png)
+
+# Section 6: Wireframes
+
+### Employee Login Screen:
+Pretty standard, type a valid username and password and sign in.
+
+![Employee Login Wireframe](EmployeeLogin.drawio.png)
+
+### Main Dashboard Screen:
+The left side navigation buttons from top to bottom read: Dashboard (the screen currently shown), Manager Menu, and the rest are placeholder buttons. The larger central portion of the dashboard reads left to right and top to bottom: system info or manager notes for the day, clock in/out, expected reservations or returns for the day, yet another placeholder button, lookup reservations, check in bikes, check out bikes. The top right of the screen has the logged in employee's name followed by the time and date.
+
+![Dashboard Wireframe](MainDashboard.drawio.png)
+
+### Bike Check-in Screen:
+The navigation is still on the left from earlier. This screen contains the customer details, rented bike details, late fee calculations, notes for bike technicians if a bike is damaged, and buttons to add notes (for both the bike and customer account) and of course complete the check-in button.
+
+![Bike Check-in Wireframe](Check_in.drawio.png)
+
+### Payment Screen:
+The navigation is still on the left. The main area now contains the customer info and balance, allows for credit or damage fees to be added via buttons if needed, payment method selection, and print/email receipt buttons.
+
+![Payment Wireframe](Payment.drawio.png)
+
+# Section 7: Prototype
+
+[Link to Employee Portal Prototype](https://www.figma.com/make/aH0ViY0KAiSB9h2OmCPNGk/Bend-Bike-Shop-App-Prototype?t=5m4HrB9TrkLODJ7e-1 )
