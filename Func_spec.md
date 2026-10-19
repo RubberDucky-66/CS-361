@@ -32,6 +32,7 @@ The following are beyond the scope of the system and are not required for the so
 ![UX Flow Diagram](ux_flow.drawio.png)
 
 # Section 6: Wireframes
+The following were generated in Draw.io and edited as necessary: 
 
 ### Employee Login Screen:
 Pretty standard, type a valid username and password and sign in.
