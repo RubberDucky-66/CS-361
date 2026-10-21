@@ -2,7 +2,7 @@ Joshua Samuel
 
 # Challenge 4.5: Component Diagram
 
-```mermaid
+```
 flowchart TB
     subgraph Client ["User's Machine"]
         UI[User Interface / Chess Board]
