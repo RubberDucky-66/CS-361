@@ -2,25 +2,23 @@ Joshua Samuel
 CS 361 
 
 # Section 1: Overview
-The software system requested by the Bend Bike Shop will enable customers to rent and reserve bikes for a requested period of time. Employees will be able to confirm rentals, process returns, and manage the details of the store's inventory.
+The software system requested by the Bend Bike Shop will enable customers to rent and reserve bikes for a requested period of time through an online website or in strore kiosk. Employees will be able to confirm rentals, process returns, and manage the details of the store's inventory. The system handles the complete rental cycle from reservation to return.
 
 # Section 2: Actors
-* Customer: Use the online website or store kiosk to browse the store's bike inventory and reserve bikes for available dates. Entering information such as name, email, and a card on file.
-* Payment Processor (external): Verifies credit cards and handles bank card transactions.
-* Store Staff: Use the employee portal to check in/out bikes, manage inventory, manage employees, check reservations, and print reports.
+* Customer: Use the online website or store kiosk to browse and filter the store's bike inventory and reserve bikes for available dates. They provide identification details, contact information, and a payment card for pre-authorization. 
+* Payment Processor (external): An external third-party service that securely pre-authorizes funds, processes credit/debit card transactions, and manages card data outside the core backend database to maintain compliance.
+* Store Staff: Use the employee portal to check in/out bikes, manage inventory, and check reservations.
+* Store Manager: A higher level of authorization that is needed to perform certain operations including managing employees, printing reports, adding/removing inventory, and general manager approvals.
 
 # Section 3: Goals/Non-Goals
 
 ## Goals:
-* Staff can check bikes in and out
-* Mangers can add employees and give employees manager numbers
-* Managers can add or remove bikes to the inventory
-* Managers can print the overdue bikes list
-* Customers can view and filter the bike inventory 
-* Customers can reserve bikes at an available date
-* Staff can clock in and out
-* Staff can view the reservations list
-* Staff can mark a bike as out for maintenance
+* Reservation & Rental Lifecycle: Customers can browse inventory, view availability, and reserve bikes up to six months in advance; staff can verify reservations, check out, and check in rentals.
+* Inventory Management: Store managers can add or remove bikes, while staff can check in/out bikes and place them under maintenance.
+* Authorization Controls: Store managers can manage employee accounts and grant manager approvals for certain actions (printing reports, inventory management, and credit accounts).
+* Schedules: Staff can clock in/out (with time records linked to schedules).
+* Reports: Managers can manually generate/print overdue bike reports by a specified date range.
+* Payment Processing: The system supports secure pre-authorizations, captures funds through an integrated payment processor, handles guest reservations via secure payment association, and logs transaction outcomes.
 
 ## Non-Goals:
 The following are beyond the scope of the system and are not required for the solution.
@@ -31,7 +29,7 @@ The following are beyond the scope of the system and are not required for the so
 * Don't worry about advertisements, that is for another team to worry about.
 
 # Section 4: Constraints
-1. Customers must be able to swipe their cards, so they don't need to enter their information manually.
+1. Customers must be able to swipe their cards, so they don't need to enter their information manually at the kiosk.
 2. Customers must be able to use the reservation system as a guest, accounts are optional.
 3. Bikes have a 7-day rental limit at max (extentions are handled through the store staff). Rentals are issued at 4 hour intervals, a days rental fee is equal to 12 hours.
 4. Reservations should be able to go as far as 6 months out.
@@ -40,7 +38,7 @@ The following are beyond the scope of the system and are not required for the so
 # Section 5: Assumptions
 1. The payment processor API will be up 99% of the time.
 2. The website should be able to handle an average of 200 users at a time.
-3. The reservation system is first come first serve. If multiple users request the same day and same bike (if only 1 is available that day) the first request to reach the server gets approved and the other will have to make a new request. 
+3. The reservation system needs an atomic reservation operation, transaction, or locking mechanism to ensure that a bike cannot be reserved for overlapping periods.
 4. A manager will always be present for all system actions requiring manager numbers.
 5. Reports will be manually printed, with a requested date range.
 
