@@ -102,3 +102,166 @@ flowchart TB
 | **Reports** | Creates and manages operation reports such as the overdue bikes list. |
 | **Long Term Database** | Stores longterm information for customer accounts and inventory. |
 | **Payment Processor** | The secure external third-party responsible for card pre-authorization and charges. |
+
+# Section 8: Data Model
+## Entity Relationship Diagram:
+``` mermaid
+erDiagram
+    CUSTOMER {
+        string customer_id
+        string name
+        string email
+        string phone_number
+    }
+
+    RESERVATION {
+        string reservation_id
+        string customer_id
+        string bike_id
+        datetime start_date
+        datetime end_date
+        string status
+    }
+
+    BIKE {
+        string bike_id
+        string model
+        string status
+        float rental_rate
+    }
+
+    PAYMENT {
+        string payment_id
+        string reservation_id
+        float amount
+        string pre_auth_status
+        datetime timestamp
+    }
+
+    CUSTOMER ||--o{ RESERVATION : "places"
+    BIKE ||--o{ RESERVATION : "is booked in"
+    RESERVATION ||--|{ PAYMENT : "requires"
+```
+## Class Diagram:
+``` mermaid
+classDiagram
+    class InventorySystem {
+        - String storeId
+        + addBike()
+        + removeBike()
+        + checkBikeDetails()
+        + updateBikeStatus()
+        + changeBikeRate()
+    }
+
+    class Bike {
+        - String bikeId
+        - String model
+        - String status
+        - float rentalRate
+        + getDetails()
+        + updateStatus()
+        + updateRentalRate()
+        + setMaintenanceMode()
+    }
+
+    class Employee {
+        - String employeeId
+        - String name
+        - int authorizationLevel
+        + viewInventory()
+        + checkInBike()
+        + checkOutBike()
+        + clockIn
+        +clockOut
+    }
+
+    class Manager {
+        - String managerId
+        - int authorizationLevel
+        + approveSpecialRequest()
+        + generateOverdueReport()
+        + manageEmployeeAccount()
+    }
+
+    InventorySystem --> Bike : manages inventory of
+    Employee --> InventorySystem : interacts with
+    Manager --|> Employee : inherits from
+    Manager --> InventorySystem : oversees and authorizes actions in
+```
+
+
+# Section 9: Interfaces
+
+### Non-primitive types used across the system:
+* BikeStatus - The current availability of a bike. Possible values could include "Available", "Reserved", "CheckedOut", "Maintenance".
+* DataRange - Represents a time span between two timestamps. Possible values may include any pair of date and times between "startDate" and "endDate" where "startDate" is less than the "endDate".
+* Report - an object with summary metrics, timestamps, or other information.
+* CardDetails - Represents the secure information of a customer's payment method.
+
+### Functions:
+1. InventorySystem : addBike
+    * Signature: addBike(model : string, initialRate : float) -> boolean
+    * Purpose: Allows a manager to introduce a new bike object into the store's inventory system with a specified base rental rate.
+    * Requires: initialRate must be greater than $0.0; the caller must possess manager authorization levels.
+    * Outcomes: A new Bike entity is created, assigned a unique ID, given a default status of "Available", and successfully added to the long-term database inventory.
+    * Guarantees: Returns true if the bike is successfully registered in the inventory; returns false if database persistence fails or authorization is insufficient.
+    * Notes: Aligns with manager inventory control requirements.
+
+2. InventorySystem : updateBikeStatus
+    * Signature: updateBikeStatus(bikeId : string, newStatus : BikeStatus, notes : string) -> boolean
+    * Purpose: Allows staff or managers to update the operational state or availability of a specific bike.
+    * Requires: bikeId must exist in the database; newStatus must be a valid BikeStatus type.
+    * Outcomes: The target bike's record is updated with the new status, and any additional notes are logged.
+    * Guarantees: Returns true if the status update commits successfully; returns false if the bike ID or newStatus is invalid.
+    * Notes: Essential for handling maintenance, reservations, and general inventory tracking.
+
+3. RentalReservationService : createReservation
+    * Signature: createReservation(bikeId : string, customerId : string, rentalPeriod : DateRange) -> string
+    * Purpose: Allows a customer to reserve an available bike for a designated time window up to six months in advance.
+    * Requires: bikeId and customerId must be valid; rentalPeriod must not overlap with an existing reservation for the target bike and cannot be beyond six months from the current date.
+    * Outcomes: An atomic system locks the bike for the requested dates to prevent overlapping reservations, records the reservation, and associates it with the customer id/details.
+    * Guarantees: Returns a unique reservation_id string upon success; returns an empty string or throws an exception if an overlapping reservation conflict occurs.
+    * Notes: Enforces the atomic reservation locking assumption to prevent overlapping bookings.
+
+4. Employee : checkOutBike
+    * Signature: checkOutBike(reservationId : string, employeeId : string) -> boolean
+    * Purpose: Allows store staff to process the physical handover of a reserved bike to a customer.
+    * Requires: reservationId must be confirmed and active for the current date; employeeId must belong to a staff member.
+    * Outcomes: The associated bike's status updates from "Reserved" to "CheckedOut", and the transaction is logged to the customer's and the bike's rental history.
+    * Guarantees: Returns true once the check-out is successfully processed; returns false if the reservation ID is invalid.
+    * Notes: Part of the workflow for managing physical rentals.
+
+5. PaymentProcessorAdapter : preAuthorizeCard
+    * Signature: preAuthorizeCard(card : CardDetails, amount : float) -> boolean
+    * Purpose: Coordinates securely with the external third-party payment processor to verify funds and pre-authorize the estimated rental total prior to checkout.
+    * Requires: card must contain valid payment reference data; amount must accurately reflect the calculated rental cost.
+    * Outcomes: Transmits a secure pre-authorization request to the external payment processor gateway and logs the transaction outcome.
+    * Guarantees: Returns true if funds are successfully pre-authorized within the required performance window; returns false if declined.
+    * Notes: Keeps card data outside the core backend database to maintain security compliance.
+
+6. Manager : generateOverdueReport
+    * Signature: generateOverdueReport(range : DateRange, managerId : string) -> Report
+    * Purpose: Enables a store manager to create a list of all bikes that are still checked out past their return dates within a specified date range.
+    * Requires: range must specify a valid start and end date; the caller must possess manager authorization levels.
+    * Outcomes: Checks the long-term database for unreturned items matching the date range and adds them into a structured Report format for manual printing.
+    * Guarantees: Returns a Report object containing all matching overdue records; returns an empty report object if no overdue records were found.
+    * Notes: Fulfills the manager-specific reporting requirement outlined in the design goals.
+
+# Section 10: Invariants 
+1. Rental Duration Limit: A single bike rental or reservation period shall never exceed 7 consecutive days without explicit staff or manager extension.
+
+2. Reservation Atomicity and Uniqueness: At any given point in time, a specific bike identifier cannot be on multiple currently active reservations or future reservations with overlapping dates.
+
+3. Role-Based Authorization Enforcement: System actions categorized under manager permissions (such as modifying employee accounts, generating overdue reports, or altering inventory pricing) require an authenticated user with a valid manager authorization level.
+
+4. Payment Separation: Raw payment information shall never be persisted or logged within the core long-term backend database.
+
+# Section Failure Modes
+
+| *ID* | *Failure* | *Detection* | *Response* | *Impact* | *Notification* |
+| --- | --- | --- | --- | --- | --- |
+| **FM-PAYMENT-TIMEOUT** | External payment gateway fails to respond within the pre-authorization time limit | `preAuthorizeCard` returns a timeout or network error status code | Retry once after 2 seconds. If it fails again prompt the customer to retry or use an alternative payment card. | Transaction delayed; customer unable to complete rental checkout immediately | Gateway timeout log |
+| **FM-KIOSK-CARD-READER-ERROR** | Customer kiosk card swipe scanner fails to read | A function receives notification that the reader failled after 3 consecutive attempts | Display an error message on the kiosk screen prompting the customer to manually enter information or seek assistance from store staff. | Kiosk transaction temporarily blocked for the user | Kiosk hardware warning logged to the employee portal dashboard |
+| **FM-DB-CONNECTION-BREAK** | Database connection breaks mid-transaction during a bike check-in or reservation save | A protection layer throws a connection timeout exception | Catch the exception and queue the transaction for when connection comes back. | Temporary reservation and inventory updates postponed | Critical database disconnect alert sent to system administrators |
+| **FM-INVENTORY-SYNC-MISMATCH** | Physical bike status in the store differs from the database state | Staff attempts to check out a bike that is flagged as available, but the item cannot be located on the rack | Staff uses the `updateBikeStatus` interface to manually correct the record status to `Maintenance` and files a note to look into the bikes whereabouts. | Inventory count discrepancy; minor customer delay during pickup or refund | Discrepancy logged under inventory audit notes |
