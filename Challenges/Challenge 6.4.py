@@ -1,5 +1,6 @@
 def wrapper_function(a, b, c):
     return third_party_dependency_that_changes_very_frequently(b, a, c)
+end
 
 def myfunction1(a, b, c):
   return wrapper_function(a, b, c)
